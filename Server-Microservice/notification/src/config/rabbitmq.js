@@ -5,7 +5,11 @@ let channel;
 
 const connectRabbitMQ = async () => {
   try {
-    connection = await amqp.connect("amqp://admin:admin123@localhost:5672");
+    const rabbitMQUrl =
+      process.env.RABBITMQ_URL ||
+      "amqp://admin:admin123@localhost:5672";
+
+    connection = await amqp.connect(rabbitMQUrl);
 
     channel = await connection.createChannel();
 
@@ -13,7 +17,11 @@ const connectRabbitMQ = async () => {
 
     return channel;
   } catch (error) {
-    console.error("RabbitMQ connection failed:", error.message);
+    console.error(
+      "RabbitMQ connection failed:",
+      error.message
+    );
+
     throw error;
   }
 };
