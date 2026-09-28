@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -18,23 +18,31 @@ import {
 import Notification from "../../components/notification/Notification";
 import { resendOtp, verifyOtp } from "../../services/auth.service";
 
-export default function VerifyOtpPage() {
+function VerifyOtpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const emailFromUrl = searchParams.get("email") || "";
 
   const [email, setEmail] = useState(emailFromUrl);
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState<string[]>([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [countdown, setCountdown] = useState(30);
 
   const [showNotification, setShowNotification] = useState(false);
-  const [notificationType, setNotificationType] = useState<"success" | "error">(
-    "success",
-  );
+  const [notificationType, setNotificationType] = useState<
+    "success" | "error"
+  >("success");
+
   const [notificationTitle, setNotificationTitle] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
 
@@ -117,7 +125,9 @@ export default function VerifyOtpPage() {
     inputRefs.current[nextIndex]?.focus();
   };
 
-  const handleVerifyOtp = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleVerifyOtp = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
     const enteredOtp = otp.join("");
@@ -160,7 +170,8 @@ export default function VerifyOtpPage() {
       showMessage(
         "success",
         "Email Verified",
-        response?.message || "Your email has been verified successfully.",
+        response?.message ||
+          "Your email has been verified successfully.",
       );
 
       setTimeout(() => {
@@ -207,7 +218,8 @@ export default function VerifyOtpPage() {
       showMessage(
         "success",
         "OTP Resent",
-        response?.message || "A new OTP has been sent to your email.",
+        response?.message ||
+          "A new OTP has been sent to your email.",
       );
     } catch (error: any) {
       console.error("Resend OTP failed:", error);
@@ -258,7 +270,11 @@ export default function VerifyOtpPage() {
             size={17}
             className="transition-transform group-hover:-translate-x-1"
           />
-          <span className="hidden sm:inline">Back to Register</span>
+
+          <span className="hidden sm:inline">
+            Back to Register
+          </span>
+
           <span className="sm:hidden">Back</span>
         </Link>
       </header>
@@ -288,12 +304,18 @@ export default function VerifyOtpPage() {
             </p>
 
             <div className="mt-8 flex items-center gap-3 text-sm font-medium text-[#75415d]">
-              <CheckCircle2 size={20} className="text-[#4f8b73]" />
+              <CheckCircle2
+                size={20}
+                className="text-[#4f8b73]"
+              />
               Secure account verification
             </div>
 
             <div className="mt-3 flex items-center gap-3 text-sm font-medium text-[#75415d]">
-              <CheckCircle2 size={20} className="text-[#4f8b73]" />
+              <CheckCircle2
+                size={20}
+                className="text-[#4f8b73]"
+              />
               Fast and simple process
             </div>
           </div>
@@ -327,7 +349,10 @@ export default function VerifyOtpPage() {
             </div>
 
             {/* OTP Form */}
-            <form onSubmit={handleVerifyOtp} className="mt-8">
+            <form
+              onSubmit={handleVerifyOtp}
+              className="mt-8"
+            >
               <div className="flex justify-center gap-2 sm:gap-3">
                 {otp.map((digit, index) => (
                   <input
@@ -340,9 +365,14 @@ export default function VerifyOtpPage() {
                     maxLength={1}
                     value={digit}
                     onChange={(event) =>
-                      handleOtpChange(index, event.target.value)
+                      handleOtpChange(
+                        index,
+                        event.target.value,
+                      )
                     }
-                    onKeyDown={(event) => handleKeyDown(index, event)}
+                    onKeyDown={(event) =>
+                      handleKeyDown(index, event)
+                    }
                     onPaste={handlePaste}
                     aria-label={`OTP digit ${index + 1}`}
                     className={`h-12 w-10 rounded-xl border-2 bg-white text-center text-xl font-bold text-[#571437] outline-none transition-all sm:h-14 sm:w-14 sm:text-2xl ${
@@ -362,7 +392,10 @@ export default function VerifyOtpPage() {
               >
                 {isLoading ? (
                   <>
-                    <RefreshCw size={20} className="animate-spin" />
+                    <RefreshCw
+                      size={20}
+                      className="animate-spin"
+                    />
                     Verifying...
                   </>
                 ) : (
@@ -377,7 +410,11 @@ export default function VerifyOtpPage() {
             {/* Divider */}
             <div className="my-7 flex items-center gap-4">
               <div className="h-px flex-1 bg-gray-200" />
-              <span className="text-sm font-medium text-gray-400">or</span>
+
+              <span className="text-sm font-medium text-gray-400">
+                or
+              </span>
+
               <div className="h-px flex-1 bg-gray-200" />
             </div>
 
@@ -390,10 +427,14 @@ export default function VerifyOtpPage() {
             >
               <RefreshCw
                 size={20}
-                className={isResending ? "animate-spin" : ""}
+                className={
+                  isResending ? "animate-spin" : ""
+                }
               />
 
-              {isResending ? "Sending OTP..." : "Resend OTP"}
+              {isResending
+                ? "Sending OTP..."
+                : "Resend OTP"}
             </button>
 
             {/* Countdown */}
@@ -458,5 +499,13 @@ export default function VerifyOtpPage() {
         />
       )}
     </main>
+  );
+}
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyOtpContent />
+    </Suspense>
   );
 }

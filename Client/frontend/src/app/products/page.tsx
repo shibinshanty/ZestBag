@@ -17,16 +17,7 @@ import Icon from "@mdi/react";
 import ProductCard from "@/components/product/ProductCard";
 import { getProducts } from "@/services/product.service";
 
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  image?: string;
-  images?: string[];
-  description?: string;
-  category?: string;
-  rating?: number;
-}
+import type { Product } from "../../types/product"; 
 
 interface ProductsResponse {
   products?: Product[];

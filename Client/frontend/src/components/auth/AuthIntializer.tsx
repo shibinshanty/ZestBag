@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { useDispatch } from "react-redux";
 
 import {
@@ -9,6 +10,7 @@ import {
 } from "../../store/slices/authSlice";
 
 import { setCart } from "../../store/slices/cartSlice";
+
 import { getProfile } from "../../services/auth.service";
 import { getCart } from "../../services/cart.service";
 
@@ -25,19 +27,7 @@ export default function AuthInitializer() {
           return;
         }
 
-        const profileResponse = await getProfile();
-
-    
-
-        const profileData =
-          profileResponse?.data?.data?.user ??
-          profileResponse?.data?.user ??
-          profileResponse?.data?.data ??
-          profileResponse?.data ??
-          profileResponse?.user ??
-          profileResponse;
-
-       
+        const profileData = await getProfile();
 
         if (
           !profileData ||
@@ -47,7 +37,7 @@ export default function AuthInitializer() {
         ) {
           console.error(
             "Invalid profile data received:",
-            profileResponse,
+            profileData
           );
 
           localStorage.removeItem("token");
@@ -58,7 +48,7 @@ export default function AuthInitializer() {
           login({
             user: profileData,
             token,
-          }),
+          })
         );
 
         try {
@@ -68,7 +58,10 @@ export default function AuthInitializer() {
           console.error("Failed to restore cart:", cartError);
         }
       } catch (error) {
-        console.error("Failed to restore authentication:", error);
+        console.error(
+          "Failed to restore authentication:",
+          error
+        );
 
         localStorage.removeItem("token");
       } finally {
