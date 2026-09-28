@@ -1,10 +1,13 @@
 const Product = require("../models/product");
+
 const cloudinary = require("../config/cloudinary");
+
 const { redisClient } = require("../config/redis");
 
 // =====================================================
 // CREATE PRODUCT
 // =====================================================
+
 exports.createProduct = async (req, res) => {
   try {
     const {
@@ -75,7 +78,6 @@ exports.createProduct = async (req, res) => {
 // GET ALL PRODUCTS
 // =====================================================
 
-
 exports.getProducts = async (req, res) => {
   try {
     const { category } = req.query;
@@ -87,7 +89,6 @@ exports.getProducts = async (req, res) => {
 
     if (category && category.toLowerCase() !== "all") {
       filter.category = category;
-
       cacheKey = `products:category:${category.toLowerCase()}`;
     }
 
@@ -113,7 +114,11 @@ exports.getProducts = async (req, res) => {
     });
 
     // Store in Redis
-    await redisClient.setEx(cacheKey, CACHE_TTL, JSON.stringify(products));
+    await redisClient.setEx(
+      cacheKey,
+      CACHE_TTL,
+      JSON.stringify(products)
+    );
 
     console.log(`Products stored in Redis: ${cacheKey}`);
 
@@ -133,6 +138,7 @@ exports.getProducts = async (req, res) => {
 // =====================================================
 // GET SINGLE PRODUCT
 // =====================================================
+
 exports.getSingleProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -156,6 +162,7 @@ exports.getSingleProduct = async (req, res) => {
 // =====================================================
 // UPDATE PRODUCT
 // =====================================================
+
 exports.updateProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -171,23 +178,38 @@ exports.updateProduct = async (req, res) => {
     // Update text fields
     // -------------------------------------------------
 
-    if (req.body.title !== undefined && req.body.title !== "") {
+    if (
+      req.body.title !== undefined &&
+      req.body.title !== ""
+    ) {
       product.title = req.body.title;
     }
 
-    if (req.body.description !== undefined && req.body.description !== "") {
+    if (
+      req.body.description !== undefined &&
+      req.body.description !== ""
+    ) {
       product.description = req.body.description;
     }
 
-    if (req.body.price !== undefined && req.body.price !== "") {
+    if (
+      req.body.price !== undefined &&
+      req.body.price !== ""
+    ) {
       product.price = Number(req.body.price);
     }
 
-    if (req.body.category !== undefined && req.body.category !== "") {
+    if (
+      req.body.category !== undefined &&
+      req.body.category !== ""
+    ) {
       product.category = req.body.category;
     }
 
-    if (req.body.stock !== undefined && req.body.stock !== "") {
+    if (
+      req.body.stock !== undefined &&
+      req.body.stock !== ""
+    ) {
       product.stock = Number(req.body.stock);
     }
 
@@ -199,18 +221,29 @@ exports.updateProduct = async (req, res) => {
       console.log("New product image received:", req.file);
 
       // Upload new image
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "products",
-      });
+      const result = await cloudinary.uploader.upload(
+        req.file.path,
+        {
+          folder: "products",
+        }
+      );
 
       // Delete old Cloudinary images
-      if (Array.isArray(product.images) && product.images.length > 0) {
+      if (
+        Array.isArray(product.images) &&
+        product.images.length > 0
+      ) {
         for (const image of product.images) {
           if (image.public_id) {
             try {
-              await cloudinary.uploader.destroy(image.public_id);
+              await cloudinary.uploader.destroy(
+                image.public_id
+              );
             } catch (cloudinaryError) {
-              console.error("Old image deletion failed:", cloudinaryError);
+              console.error(
+                "Old image deletion failed:",
+                cloudinaryError
+              );
             }
           }
         }
@@ -228,6 +261,11 @@ exports.updateProduct = async (req, res) => {
     // Save updated product
     const updatedProduct = await product.save();
 
+    // Invalidate product list cache
+    await redisClient.del("products:all");
+
+    console.log("Product list cache invalidated");
+
     return res.status(200).json({
       message: "Product updated successfully",
       product: updatedProduct,
@@ -244,6 +282,7 @@ exports.updateProduct = async (req, res) => {
 // =====================================================
 // DELETE PRODUCT
 // =====================================================
+
 exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -260,9 +299,14 @@ exports.deleteProduct = async (req, res) => {
       for (const image of product.images) {
         if (image.public_id) {
           try {
-            await cloudinary.uploader.destroy(image.public_id);
+            await cloudinary.uploader.destroy(
+              image.public_id
+            );
           } catch (cloudinaryError) {
-            console.error("Cloudinary image deletion failed:", cloudinaryError);
+            console.error(
+              "Cloudinary image deletion failed:",
+              cloudinaryError
+            );
           }
         }
       }
@@ -270,6 +314,11 @@ exports.deleteProduct = async (req, res) => {
 
     // Delete product from MongoDB
     await product.deleteOne();
+
+    // Invalidate product list cache
+    await redisClient.del("products:all");
+
+    console.log("Product list cache invalidated");
 
     return res.status(200).json({
       message: "Product deleted successfully",
@@ -282,6 +331,10 @@ exports.deleteProduct = async (req, res) => {
     });
   }
 };
+
+// =====================================================
+// ADMIN DASHBOARD
+// =====================================================
 
 exports.getAdminDashboard = async (req, res) => {
   try {
@@ -299,7 +352,10 @@ exports.getAdminDashboard = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Product admin dashboard error:", error);
+    console.error(
+      "Product admin dashboard error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
