@@ -19,26 +19,13 @@ export default function AuthInitializer() {
   useEffect(() => {
     const restoreAuth = async () => {
       try {
-        console.log("AUTH INITIALIZER: Starting...");
-
         const token = localStorage.getItem("token");
 
-        console.log("AUTH INITIALIZER: Token exists:", !!token);
-
-        // No token means the user is logged out
         if (!token) {
-          console.log("AUTH INITIALIZER: No token found");
           return;
         }
 
-        console.log("AUTH INITIALIZER: Calling getProfile...");
-
         const profileData = await getProfile();
-
-        console.log(
-          "AUTH INITIALIZER: Profile response:",
-          profileData
-        );
 
         if (
           !profileData ||
@@ -47,20 +34,13 @@ export default function AuthInitializer() {
           !profileData.email
         ) {
           console.error(
-            "AUTH INITIALIZER: Invalid profile data:",
+            "Invalid profile data received:",
             profileData
           );
 
-          console.error(
-            "AUTH INITIALIZER: Token will NOT be removed during debugging."
-          );
-
+          localStorage.removeItem("token");
           return;
         }
-
-        console.log(
-          "AUTH INITIALIZER: Profile validation successful"
-        );
 
         dispatch(
           login({
@@ -69,39 +49,24 @@ export default function AuthInitializer() {
           })
         );
 
-        console.log(
-          "AUTH INITIALIZER: User restored successfully"
-        );
-
         try {
           const cartData = await getCart();
-
           dispatch(setCart(cartData));
-
-          console.log(
-            "AUTH INITIALIZER: Cart restored successfully"
-          );
         } catch (cartError) {
           console.error(
-            "AUTH INITIALIZER: Failed to restore cart:",
+            "Failed to restore cart:",
             cartError
           );
         }
       } catch (error) {
         console.error(
-          "AUTH INITIALIZER: Failed to restore authentication:",
+          "Failed to restore authentication:",
           error
         );
 
-        console.error(
-          "AUTH INITIALIZER: Token will NOT be removed during debugging."
-        );
+        localStorage.removeItem("token");
       } finally {
         dispatch(setAuthInitialized(true));
-
-        console.log(
-          "AUTH INITIALIZER: Authentication initialization completed"
-        );
       }
     };
 

@@ -80,7 +80,7 @@ export async function loginUser(
 export async function getProfile(): Promise<User> {
   const response = await api.get("/api/auth/profile");
 
-  return response.data;
+  return response.data.user;
 }
 
 export async function registerUser(
