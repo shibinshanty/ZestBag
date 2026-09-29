@@ -103,6 +103,8 @@ exports.register = async (req, res) => {
     });
   } catch (error) {
     console.error("Registration error:", error);
+    console.error("Registration error message:", error.message);
+    console.error("Registration error code:", error.code);
 
     return res.status(500).json({
       message: "Registration failed",
@@ -304,7 +306,6 @@ exports.resendOtp = async (req, res) => {
   }
 };
 
-
 // Get logged-in user's profile
 
 exports.getProfile = async (req, res) => {
@@ -337,11 +338,7 @@ exports.getProfile = async (req, res) => {
     }
 
     // Store in Redis
-    await redisClient.setEx(
-      CACHE_KEY,
-      CACHE_TTL,
-      JSON.stringify(user)
-    );
+    await redisClient.setEx(CACHE_KEY, CACHE_TTL, JSON.stringify(user));
 
     console.log("User profile stored in Redis");
 
@@ -359,19 +356,10 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-
 // Update logged-in user's profile
 exports.updateProfile = async (req, res) => {
   try {
-    const {
-      name,
-      phone,
-      address,
-      city,
-      district,
-      state,
-      pincode,
-    } = req.body;
+    const { name, phone, address, city, district, state, pincode } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({
@@ -426,15 +414,10 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-
 // Change logged-in user's password
 exports.changePassword = async (req, res) => {
   try {
-    const {
-      currentPassword,
-      newPassword,
-      confirmPassword,
-    } = req.body;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
 
     if (!currentPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({
@@ -482,10 +465,7 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    const isSamePassword = await bcrypt.compare(
-      newPassword,
-      user.password,
-    );
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
 
     if (isSamePassword) {
       return res.status(400).json({
@@ -511,8 +491,6 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
-
-
 
 // Forgot Password
 
@@ -552,17 +530,13 @@ exports.forgotPassword = async (req, res) => {
     user.resetPasswordToken = hashedToken;
 
     // Token expires in 15 minutes
-    user.resetPasswordExpires = new Date(
-      Date.now() + 15 * 60 * 1000
-    );
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
 
     await user.save();
 
-    const frontendUrl =
-      process.env.FRONTEND_URL || "http://localhost:3000";
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
-    const resetUrl =
-      `${frontendUrl}/reset-password/${resetToken}`;
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
@@ -670,10 +644,7 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
@@ -685,22 +656,17 @@ exports.resetPassword = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        message:
-          "Password reset link is invalid or has expired",
+        message: "Password reset link is invalid or has expired",
       });
     }
 
     // Prevent using the same password
-    const isSamePassword = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isSamePassword = await bcrypt.compare(password, user.password);
 
     if (isSamePassword) {
       return res.status(400).json({
         success: false,
-        message:
-          "New password must be different from your current password",
+        message: "New password must be different from your current password",
       });
     }
 
@@ -726,7 +692,6 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-
 // Validate Reset Password Token
 
 exports.validateResetPasswordToken = async (req, res) => {
@@ -740,10 +705,7 @@ exports.validateResetPasswordToken = async (req, res) => {
       });
     }
 
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
@@ -772,7 +734,6 @@ exports.validateResetPasswordToken = async (req, res) => {
     });
   }
 };
-
 
 exports.getAdminDashboard = async (req, res) => {
   try {
@@ -821,16 +782,12 @@ exports.getAdminUsers = async (req, res) => {
       role: "user",
     })
       .select(
-        "_id name email phone address city district state pincode membership isEmailVerified createdAt"
+        "_id name email phone address city district state pincode membership isEmailVerified createdAt",
       )
       .sort({ createdAt: -1 });
 
     // Store in Redis
-    await redisClient.setEx(
-      CACHE_KEY,
-      CACHE_TTL,
-      JSON.stringify(users)
-    );
+    await redisClient.setEx(CACHE_KEY, CACHE_TTL, JSON.stringify(users));
 
     console.log("Admin users stored in Redis");
 
