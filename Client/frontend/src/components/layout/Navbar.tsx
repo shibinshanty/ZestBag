@@ -53,7 +53,7 @@ export default function Navbar() {
       try {
         const cartData = await getCart();
 
-        console.log("Navbar cart data:", cartData);
+        // console.log("Navbar cart data:", cartData);
 
         dispatch(setCart(cartData));
       } catch (error) {

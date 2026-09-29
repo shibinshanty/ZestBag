@@ -5,7 +5,7 @@ import type { CartItem } from "../types/cart";
 export async function getCart() {
   const response = await api.get("/api/cart/productcart");
 
-  console.log("Cart response:", response.data);
+  // console.log("Cart response:", response.data);
 
   return response.data;
 }
