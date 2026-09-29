@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-
 import { useDispatch } from "react-redux";
 
 import {
@@ -20,14 +19,26 @@ export default function AuthInitializer() {
   useEffect(() => {
     const restoreAuth = async () => {
       try {
+        console.log("AUTH INITIALIZER: Starting...");
+
         const token = localStorage.getItem("token");
+
+        console.log("AUTH INITIALIZER: Token exists:", !!token);
 
         // No token means the user is logged out
         if (!token) {
+          console.log("AUTH INITIALIZER: No token found");
           return;
         }
 
+        console.log("AUTH INITIALIZER: Calling getProfile...");
+
         const profileData = await getProfile();
+
+        console.log(
+          "AUTH INITIALIZER: Profile response:",
+          profileData
+        );
 
         if (
           !profileData ||
@@ -36,13 +47,20 @@ export default function AuthInitializer() {
           !profileData.email
         ) {
           console.error(
-            "Invalid profile data received:",
+            "AUTH INITIALIZER: Invalid profile data:",
             profileData
           );
 
-          localStorage.removeItem("token");
+          console.error(
+            "AUTH INITIALIZER: Token will NOT be removed during debugging."
+          );
+
           return;
         }
+
+        console.log(
+          "AUTH INITIALIZER: Profile validation successful"
+        );
 
         dispatch(
           login({
@@ -51,22 +69,39 @@ export default function AuthInitializer() {
           })
         );
 
+        console.log(
+          "AUTH INITIALIZER: User restored successfully"
+        );
+
         try {
           const cartData = await getCart();
+
           dispatch(setCart(cartData));
+
+          console.log(
+            "AUTH INITIALIZER: Cart restored successfully"
+          );
         } catch (cartError) {
-          console.error("Failed to restore cart:", cartError);
+          console.error(
+            "AUTH INITIALIZER: Failed to restore cart:",
+            cartError
+          );
         }
       } catch (error) {
         console.error(
-          "Failed to restore authentication:",
+          "AUTH INITIALIZER: Failed to restore authentication:",
           error
         );
 
-        localStorage.removeItem("token");
+        console.error(
+          "AUTH INITIALIZER: Token will NOT be removed during debugging."
+        );
       } finally {
-        // Always mark authentication initialization as completed
         dispatch(setAuthInitialized(true));
+
+        console.log(
+          "AUTH INITIALIZER: Authentication initialization completed"
+        );
       }
     };
 
